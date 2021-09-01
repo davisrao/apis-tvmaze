@@ -5,6 +5,7 @@ const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
 
 const SEARCH_WEBSITE = "http://api.tvmaze.com/search/shows";
+const DEFAULT_IMAGE = "https://store-images.s-microsoft.com/image/apps.65316.13510798887490672.6e1ebb25-96c8-4504-b714-1f7cbca3c5ad.f9514a23-1eb8-4916-a18e-99b1a9817d15?mode=scale&q=90&h=300&w=300"
 
 
 
@@ -18,11 +19,28 @@ const SEARCH_WEBSITE = "http://api.tvmaze.com/search/shows";
 async function getShowsByTerm(searchTerm) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
   console.log("get shows by term: ", "this ran");
-
+  let arrayOfShowData = [];
   let response = await axios.get(SEARCH_WEBSITE, {params:{q:searchTerm}});
-  let showFromResponse = response.data['show']
+  let shows = response.data
+  for (let showObj of shows){
+    let showInfo = {}
+    showInfo.id = showObj.show.id;
+    showInfo.name = showObj.show.name;
+    showInfo.summary = showObj.show.summary;
+    if (showObj.show.image === null){
+      showInfo.image = DEFAULT_IMAGE
+    }
+    else{
+      showInfo.image = showObj.show.image.medium
+    }
+    arrayOfShowData.push(showInfo)
+  }
   console.log("this is our response:",response);
   console.log(typeof response);
+  console.log("this is respnse.data", response.data)
+  console.log(typeof response.data)
+  console.log("this is our array of shows", arrayOfShowData)
+
 
 
   // return [
