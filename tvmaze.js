@@ -7,26 +7,21 @@ const $searchForm = $("#searchForm");
 const SEARCH_WEBSITE = "http://api.tvmaze.com/search/shows";
 const DEFAULT_IMAGE = "https://store-images.s-microsoft.com/image/apps.65316.13510798887490672.6e1ebb25-96c8-4504-b714-1f7cbca3c5ad.f9514a23-1eb8-4916-a18e-99b1a9817d15?mode=scale&q=90&h=300&w=300"
 
-
- function getShowId(showData){
-  // let showData = await getShowsByTerm();
-  let showId = showData.show.id;
-  return showId;
+/* takes in object of show data and returns the show ID*/
+ function _getShowId(showData){
+  return showData.show.id;
 }
-
- function getShowName(showData){
-  // let showData = await getShowsByTerm();
-  let showName = showData.show.name;
-  return showName;
+/* takes in object of show data and returns the show name*/
+ function _getShowName(showData){
+  return showData.show.name;
 }
-
- function getShowSummary(showData){
-  // let showData = await getShowsByTerm();
-  let showSummary = showData.show.summary;
-  return showSummary;
+/* takes in object of show data and returns the show summary*/
+ function _getShowSummary(showData){
+  return showData.show.summary;
 }
- function getShowImage(showData){
-  // let showData = await getShowsByTerm();
+/* takes in object of show data and returns the show image
+*    (if no image URL given by API, put in a default image URL)*/
+ function _getShowImage(showData){
   let showImage;
 
   if (showData.show.image === null){
@@ -38,16 +33,18 @@ const DEFAULT_IMAGE = "https://store-images.s-microsoft.com/image/apps.65316.135
   return showImage;
 }
 
+/* takes in data from one show and returns an object of specific data*/
  function createObjectFromShow(show){
-  let showSummary = getShowSummary(show);
-  let showImage = getShowImage(show);
-  let showName = getShowName(show);
-  let showId = getShowId(show);
+  let showSummary = _getShowSummary(show);
+  let showImage = _getShowImage(show);
+  let showName = _getShowName(show);
+  let showId = _getShowId(show);
 
   return {id: showId,name: showName, summary: showSummary,image: showImage};
 }
 
- function createArrayOfObjects(shows){
+/* takes in data from all search responses and returns and array of objects with individual show data*/
+ function createArrayOfObjects(shows){   //TV Maze search data
   let showsData = shows.data;
   let arrayOfShowData = [];
 
@@ -55,30 +52,86 @@ const DEFAULT_IMAGE = "https://store-images.s-microsoft.com/image/apps.65316.135
     let showObject = createObjectFromShow(show)
     arrayOfShowData.push(showObject);
   }
-
   return arrayOfShowData;
 }
-
-
-
-
-
 
 
 /** Given a search term, search for tv shows that match that query.
  *
  *  Returns (promise) array of show objects: [show, show, ...].
- *    Each show object should contain exactly: {id, name, summary, image}
- *    (if no image URL given by API, put in a default image URL)
  */
 
 async function getShowsByTerm(searchTerm) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
   console.log("get shows by term: ", "this ran");
   let response = await axios.get(SEARCH_WEBSITE, {params:{q:searchTerm}});
-  return response;
+  return response.data;
+
+}
 
 
+/** Given aray of show objects, create markup for each and append to DOM */
+
+function populateShows(shows) {
+  $showsList.empty();
+
+  for (let show of shows) {
+    const $show = $(
+        `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
+         <div class="media">
+           <img 
+              src=${show.image} 
+              alt="${show.name}" 
+              class="w-25 mr-3">
+           <div class="media-body">
+             <h5 class="text-primary">${show.name}</h5>
+             <div><small>${show.summary}</small></div>
+             <button class="btn btn-outline-light btn-sm Show-getEpisodes">
+               Episodes
+             </button>
+           </div>
+         </div>  
+       </div>
+      `);
+
+    $showsList.append($show);  }
+}
+
+
+/** Handle search form submission: get shows from API and display.
+ *    Hide episodes area (that only gets shown if they ask for episodes)
+ */
+
+async function searchForShowAndDisplay() {
+  const term = $("#searchForm-term").val();
+  const shows = await getShowsByTerm(term);
+  console.log("shows", shows)
+  let showArray = createArrayOfObjects(shows);
+  console.log(showArray);
+
+
+
+  $episodesArea.hide();
+  populateShows(showArray);
+}
+
+$searchForm.on("submit", async function (evt) {
+  evt.preventDefault();
+  await searchForShowAndDisplay();
+});
+
+
+/** Given a show ID, get from API and return (promise) array of episodes:
+ *      { id, name, season, number }
+ */
+
+// async function getEpisodesOfShow(id) { }
+
+/** Write a clear docstring for this function... */
+
+// function populateEpisodes(episodes) { }
+
+// *** EXTRA CODE ***
   // let shows = response.data
   // for (let showObj of shows){
   //   let showInfo = {}
@@ -119,65 +172,3 @@ async function getShowsByTerm(searchTerm) {
   //         "http://static.tvmaze.com/uploads/images/medium_portrait/147/369403.jpg"
   //   }
   // ]
-}
-
-
-/** Given list of shows, create markup for each and to DOM */
-
-function populateShows(shows) {
-  $showsList.empty();
-
-  for (let show of shows) {
-    const $show = $(
-        `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
-         <div class="media">
-           <img 
-              src="http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg" 
-              alt="Bletchly Circle San Francisco" 
-              class="w-25 mr-3">
-           <div class="media-body">
-             <h5 class="text-primary">${show.name}</h5>
-             <div><small>${show.summary}</small></div>
-             <button class="btn btn-outline-light btn-sm Show-getEpisodes">
-               Episodes
-             </button>
-           </div>
-         </div>  
-       </div>
-      `);
-
-    $showsList.append($show);  }
-}
-
-
-/** Handle search form submission: get shows from API and display.
- *    Hide episodes area (that only gets shown if they ask for episodes)
- */
-
-async function searchForShowAndDisplay() {
-  const term = $("#searchForm-term").val();
-  const shows = await getShowsByTerm(term);
-  
-  let showArray = createArrayOfObjects(shows);
-  console.log(showArray);
-
-
-  $episodesArea.hide();
-  populateShows(shows);
-}
-
-$searchForm.on("submit", async function (evt) {
-  evt.preventDefault();
-  await searchForShowAndDisplay();
-});
-
-
-/** Given a show ID, get from API and return (promise) array of episodes:
- *      { id, name, season, number }
- */
-
-// async function getEpisodesOfShow(id) { }
-
-/** Write a clear docstring for this function... */
-
-// function populateEpisodes(episodes) { }
