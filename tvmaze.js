@@ -8,6 +8,62 @@ const SEARCH_WEBSITE = "http://api.tvmaze.com/search/shows";
 const DEFAULT_IMAGE = "https://store-images.s-microsoft.com/image/apps.65316.13510798887490672.6e1ebb25-96c8-4504-b714-1f7cbca3c5ad.f9514a23-1eb8-4916-a18e-99b1a9817d15?mode=scale&q=90&h=300&w=300"
 
 
+ function getShowId(showData){
+  // let showData = await getShowsByTerm();
+  let showId = showData.show.id;
+  return showId;
+}
+
+ function getShowName(showData){
+  // let showData = await getShowsByTerm();
+  let showName = showData.show.name;
+  return showName;
+}
+
+ function getShowSummary(showData){
+  // let showData = await getShowsByTerm();
+  let showSummary = showData.show.summary;
+  return showSummary;
+}
+ function getShowImage(showData){
+  // let showData = await getShowsByTerm();
+  let showImage;
+
+  if (showData.show.image === null){
+        showImage = DEFAULT_IMAGE
+      }
+      else{
+        showImage = showData.show.image.medium
+      }
+  return showImage;
+}
+
+ function createObjectFromShow(show){
+  let showSummary = getShowSummary(show);
+  let showImage = getShowImage(show);
+  let showName = getShowName(show);
+  let showId = getShowId(show);
+
+  return {id: showId,name: showName, summary: showSummary,image: showImage};
+}
+
+ function createArrayOfObjects(shows){
+  let showsData = shows.data;
+  let arrayOfShowData = [];
+
+  for(let show of showsData){
+    let showObject = createObjectFromShow(show)
+    arrayOfShowData.push(showObject);
+  }
+
+  return arrayOfShowData;
+}
+
+
+
+
+
+
 
 /** Given a search term, search for tv shows that match that query.
  *
@@ -19,27 +75,29 @@ const DEFAULT_IMAGE = "https://store-images.s-microsoft.com/image/apps.65316.135
 async function getShowsByTerm(searchTerm) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
   console.log("get shows by term: ", "this ran");
-  let arrayOfShowData = [];
   let response = await axios.get(SEARCH_WEBSITE, {params:{q:searchTerm}});
-  let shows = response.data
-  for (let showObj of shows){
-    let showInfo = {}
-    showInfo.id = showObj.show.id;
-    showInfo.name = showObj.show.name;
-    showInfo.summary = showObj.show.summary;
-    if (showObj.show.image === null){
-      showInfo.image = DEFAULT_IMAGE
-    }
-    else{
-      showInfo.image = showObj.show.image.medium
-    }
-    arrayOfShowData.push(showInfo)
-  }
-  console.log("this is our response:",response);
-  console.log(typeof response);
-  console.log("this is respnse.data", response.data)
-  console.log(typeof response.data)
-  console.log("this is our array of shows", arrayOfShowData)
+  return response;
+
+
+  // let shows = response.data
+  // for (let showObj of shows){
+  //   let showInfo = {}
+  //   showInfo.id = showObj.show.id;
+  //   showInfo.name = showObj.show.name;
+  //   showInfo.summary = showObj.show.summary;
+  //   if (showObj.show.image === null){
+  //     showInfo.image = DEFAULT_IMAGE
+  //   }
+  //   else{
+  //     showInfo.image = showObj.show.image.medium
+  //   }
+  //   arrayOfShowData.push(showInfo)
+  // }
+  // // console.log("this is our response:",response);
+  // // console.log(typeof response);
+  // // console.log("this is respnse.data", response.data)
+  // // console.log(typeof response.data)
+  // // console.log("this is our array of shows", arrayOfShowData)
 
 
 
@@ -99,6 +157,10 @@ function populateShows(shows) {
 async function searchForShowAndDisplay() {
   const term = $("#searchForm-term").val();
   const shows = await getShowsByTerm(term);
+  
+  let showArray = createArrayOfObjects(shows);
+  console.log(showArray);
+
 
   $episodesArea.hide();
   populateShows(shows);
