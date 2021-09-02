@@ -105,7 +105,8 @@ async function getShowEpisodes(showId) {
   let episodesAPI = `http://api.tvmaze.com/shows/${showId}/episodes`
   let episodesResponse = await axios.get(episodesAPI);
   let episodesResponseArray = episodesResponse.data;
-    // console.log("episodesresponse is:",episodesResponse,"episodesResponse type is: ",typeof episodesResponse)
+  //console.log("episodesresponse is:",episodesResponseArray)
+  //console.log("episodesresponseArray type is:", typeof episodesResponseArray)
   let episodesArray = [];
   for (let episodes of episodesResponseArray) {
     episodesArray.push({ id: episodes.id, name: episodes.name, season: episodes.season, number: episodes.number });
@@ -120,7 +121,8 @@ async function populateEpisodes(showId) {
   let episodesArray = await getShowEpisodes(showId);
 
   for (let episode of episodesArray) {
-    $('#episodesList').append(`<li>Season: ${episode.season} Episode: ${episode.number} Title: ${episode.name}<li/>`);
+    //console.log("episode: ", episode)
+    $("#episodesList").append($("<li>", { text: `Season: ${episode.season} Episode: ${episode.number} Title: ${episode.name}`} ));
   }
 }
 /** Handle search form submission: get shows from API and display.
@@ -150,6 +152,7 @@ $('#showsList').on("click", ".Show-getEpisodes", async function (evt) {
   let showId = showDiv.attr("data-show-id");
   console.log("showId is:",showId);
   await populateEpisodes(showId);
+  $episodesArea.show()
 });
 
 
